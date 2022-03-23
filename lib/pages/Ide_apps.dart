@@ -4,6 +4,8 @@ import 'package:dompet_q/widgets/detail_apps.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../widgets/drawer.dart';
+
 class IdeApps extends StatelessWidget {
   List<Color> _availableColor = [
     Colors.red,
@@ -35,6 +37,7 @@ class IdeApps extends StatelessWidget {
   final TextEditingController namaController = TextEditingController();
   final TextEditingController detailController = TextEditingController();
   final GlobalKey<FormState> state = GlobalKey<FormState>();
+  final GlobalKey<ScaffoldState> _key = GlobalKey(); // Create a key
 
   @override
   Widget build(BuildContext context) {
@@ -52,14 +55,22 @@ class IdeApps extends StatelessWidget {
     }
 
     return Scaffold(
+      key: _key,
+      drawerEnableOpenDragGesture: false,
+      drawer: MainDrawer(),
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
-        leading: Icon(
-          Icons.clear_all,
-          color: Colors.black,
-          size: 25.0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.clear_all,
+            color: Colors.black,
+            size: 25.0,
+          ),
+          onPressed: () {
+            _key.currentState!.openDrawer();
+          },
         ),
         centerTitle: true,
         title: Text(

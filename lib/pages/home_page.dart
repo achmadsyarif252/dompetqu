@@ -1,12 +1,19 @@
 import 'package:dompet_q/models/chart_data.dart';
 import 'package:dompet_q/models/transaction.dart';
+import 'package:dompet_q/pages/Ide_apps.dart';
 import 'package:dompet_q/pages/detail_expenditure.dart';
+import 'package:dompet_q/pages/habit_maker.dart';
+import 'package:dompet_q/pages/kamus.dart';
 import 'package:dompet_q/pages/new_income.dart';
 import 'package:dompet_q/provider/transaction_provider.dart';
+import 'package:dompet_q/widgets/drawer.dart';
 import 'package:dompet_q/widgets/list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:audioplayers/audioplayers.dart';
+
+import '../api/LocalNotifyManager.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -16,24 +23,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<ChartData> chartData = [];
 
-  @override
-  void initState() {
-    chartData.add(
-      ChartData(
-        tipe: "Pemasukan",
-        total: 150000,
-      ),
-    );
-    chartData.add(
-      ChartData(
-        tipe: "Pengeluaran",
-        total: 50000,
-      ),
-    );
-    super.initState();
-  }
-
   DateTime? _selectedDate = null;
+  final GlobalKey<ScaffoldState> _key = GlobalKey(); // Create a key
+
   @override
   Widget build(BuildContext context) {
     final transactionProvider = Provider.of<TransactionProvider>(context);
@@ -314,12 +306,17 @@ class _HomePageState extends State<HomePage> {
     }
 
     return Scaffold(
+      key: _key,
+      drawerEnableOpenDragGesture: false,
+      drawer: MainDrawer(),
       appBar: AppBar(
         leading: IconButton(
-          onPressed: () {},
+          onPressed: () {
+            _key.currentState!.openDrawer();
+          },
           icon: Icon(
             Icons.clear_all,
-            size: 30.0,
+            size: 28.0,
           ),
           color: Colors.black,
         ),

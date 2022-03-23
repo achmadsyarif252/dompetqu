@@ -2,7 +2,8 @@ import 'package:dompet_q/provider/whistlist_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-
+import '../pages/add_whistlist.dart';
+enum Action { Delete, Edit }
 class CompleteCardItem extends StatelessWidget {
   final int? id;
   final String? nama;
@@ -89,29 +90,93 @@ class CompleteCardItem extends StatelessWidget {
                 ),
               ),
             ),
-            Container(
-              width: 100,
-              child: TextButton(
-                style: TextButton.styleFrom(
-                  backgroundColor: Colors.blue,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                PopupMenuButton<Action>(
+                  icon: Icon(
+                    Icons.more_vert,
+                  ),
+                  onSelected: (Action action) {
+                    if (action == Action.Delete) {
+                      showDialog(
+                        context: context,
+                        builder: (_) {
+                          return AlertDialog(
+                            content: Text('Hapus $nama'),
+                            title: Text('Hapus Whistlist'),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text(
+                                  'Batal',
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  whistListProvider.delete(id!);
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text(
+                                  'Ya',
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    } else if (action == Action.Edit) {
+                      Navigator.of(context).pushNamed(
+                        AddWhistList.routeName,
+                        arguments: id,
+                      );
+                    }
+                  },
+                  itemBuilder: (_) {
+                    return [
+                      PopupMenuItem(
+                        child: Text(
+                          'Delete',
+                        ),
+                        value: Action.Delete,
+                      ),
+                      PopupMenuItem(
+                        child: Text(
+                          'Edit',
+                        ),
+                        value: Action.Edit,
+                      ),
+                    ];
+                  },
                 ),
-                onPressed: () {
-                  whistListProvider.update(
-                    id!,
-                    nama!,
-                    total!,
-                    tanggal!,
-                    1,
-                    curentDana!,
-                  );
-                },
-                child: Text(
-                  'Tercapai',
-                  style: TextStyle(
-                    color: Colors.white,
+                Container(
+                  width: 100,
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                    ),
+                    onPressed: () {
+                      whistListProvider.update(
+                        id!,
+                        nama!,
+                        total!,
+                        tanggal!,
+                        1,
+                        curentDana!,
+                      );
+                    },
+                    child: Text(
+                      'Tercapai',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ],
         ),

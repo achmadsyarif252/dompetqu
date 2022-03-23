@@ -43,6 +43,13 @@ dev_dependencies:
   provider: ^6.0.2
   sqflite: ^2.0.0+4
   syncfusion_flutter_charts: ^19.4.50
+  vibration: ^1.7.3
+  audioplayers:
+  flutter_local_notifications: ^9.3.2
+  rxdart: ^0.27.3
+  workmanager: ^0.4.0
+
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -57,6 +64,7 @@ flutter:
   assets:
     - assets/
     - assets/fonts/
+    - assets/audio/keep_going.mp3
   #   - images/a_dot_ham.jpeg
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

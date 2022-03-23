@@ -1,14 +1,37 @@
-import 'package:dompet_q/models/habit_model.dart';
 import 'package:dompet_q/provider/habit_prodivder.dart';
+import 'package:dompet_q/provider/point_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:vibration/vibration.dart';
+import 'package:audioplayers/audioplayers.dart';
 
-class AddProgress extends StatelessWidget {
+class AddProgress extends StatefulWidget {
   static const routeName = '/habitcounter';
+
+  @override
+  State<AddProgress> createState() => _AddProgressState();
+}
+
+class _AddProgressState extends State<AddProgress> {
+  late final AudioCache _audioCache;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _audioCache = AudioCache(
+      prefix: 'audio/',
+      fixedPlayer: AudioPlayer()..setReleaseMode(ReleaseMode.STOP),
+    );
+  }
+
+  final player = AudioCache();
 
   @override
   Widget build(BuildContext context) {
     final HabbitProvider habbitProvider = Provider.of<HabbitProvider>(context);
+    final PointProvider pointProvider = Provider.of<PointProvider>(context);
     int? id = ModalRoute.of(context)!.settings.arguments as int;
     final selectedHabit = habbitProvider.findById(id);
     return Container(
@@ -56,7 +79,11 @@ class AddProgress extends StatelessWidget {
           child: FloatingActionButton(
             backgroundColor: Colors.white,
             onPressed: () {
-              habbitProvider.updateHabbit(id, selectedHabit.nama!, 1);
+              Vibration.vibrate(duration: 200);
+              player.play('audio/keep_going.mp3');
+              habbitProvider.updateHabbit(
+                  id, selectedHabit.nama!, 1, selectedHabit.poinGain!);
+              pointProvider.updatePoin(selectedHabit.poinGain!, 0);
             },
             child: Icon(
               Icons.add,

@@ -1,118 +1,91 @@
 import 'package:dompet_q/models/whistlist.dart';
 import 'package:dompet_q/provider/whistlist_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
-class AddWhistList extends StatefulWidget {
-  static const routeName = '/add-whistList';
+class EditWhistList extends StatefulWidget {
+  static const routeName = '/edit-whistlist';
 
   @override
-  State<AddWhistList> createState() => _AddWhistListState();
+  State<EditWhistList> createState() => _EditWhistListState();
 }
 
-class _AddWhistListState extends State<AddWhistList> {
+class _EditWhistListState extends State<EditWhistList> {
   TextEditingController namaController = TextEditingController();
+
   TextEditingController totalController = TextEditingController();
+
   TextEditingController tanggalController = TextEditingController();
+
+  String? nama, tanggal;
+
+  String? total;
+
   DateTime? selectedDate;
 
-  // WhistList editWhistList = WhistList.withId(
-  //   id: 0,
-  //   nama: '',
-  //   total: 0,
-  //   tanggal: '',
-  //   isComplete: -1,
-  //   currentDana: 0,
-  // );
+  final _priceFocusNode = FocusNode();
 
-  // var _initialValues = {
-  //   'nama': '',
-  //   'total': '',
-  //   'tanggal': '',
-  // };
-
-  // @override
-  // void initState() {
-  //   final int? id = ModalRoute.of(context)!.settings.arguments as int?;
-  //   if (id == null) return;
-  //   editWhistList = Provider.of<WhistListProvider>(context,listen: false).findById(id);
-  //   _initialValues = {
-  //     'nama': editWhistList.nama!,
-  //     'total': "Rp." + editWhistList.total.toString(),
-  //     'tanggal': editWhistList.tanggal!,
-  //   };
-  //   tanggalController.text =
-  //       DateFormat.yMMMEd().format(DateTime.parse(editWhistList.tanggal!));
-  //   tanggal = editWhistList.tanggal;
-
-  //   super.initState();
-  // }
-
-  // var _isInit = true;
-  // @override
-  // void didChangeDependencies() {
-  //   if (_isInit) {
-  //     final int? id = ModalRoute.of(context)!.settings.arguments as int?;
-  //     if (id == null) return;
-  //     editWhistList = Provider.of<WhistListProvider>(context).findById(id);
-  //     _initialValues = {
-  //       'nama': editWhistList.nama!,
-  //       'total': editWhistList.total.toString(),
-  //       'tanggal': editWhistList.tanggal!,
-  //     };
-  //     tanggalController.text =
-  //         DateTime.parse(editWhistList.tanggal!).toIso8601String();
-  //   }
-  //   _isInit = false;
-  //   super.didChangeDependencies();
-  // }
+  final _targetNode = FocusNode();
 
   final formState = GlobalKey<FormState>();
 
-  DateTime? _selectedDateTime = null;
-
-  final _priceFocusNode = FocusNode();
-  String? tanggal;
-  final _targetNode = FocusNode();
-
-  _presentDatePicker() {
-    showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime(2100),
-    ).then((pickedDate) {
-      if (pickedDate == null) {
-        return;
-      }
-      // date2 = pickedDate.toIso8601String();
-      tanggal = pickedDate.toIso8601String();
-      selectedDate = pickedDate;
-      tanggalController.text = selectedDate!.toIso8601String();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final whistListProvider = Provider.of<WhistListProvider>(context);
-    void save() {
+    //get id from navigator
+    final int id = ModalRoute.of(context)!.settings.arguments as int;
+    final WhistListProvider whistListProvider =
+        Provider.of<WhistListProvider>(context);
+    WhistList whistList = whistListProvider.findById(id);
+    // tanggalController.text = whistList.tanggal.toString();
+    namaController.text = whistList.nama!;
+    totalController.text = "Rp.${whistList.total.toString()}";
+    var _initialValues = {
+      'nama': whistList.nama,
+      'tanggal': whistList.tanggal,
+      'total': whistList.total,
+    };
+    _presentDatePicker() {
+      showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(1900),
+        lastDate: DateTime(2100),
+      ).then((pickedDate) {
+        if (pickedDate == null) {
+          return;
+        }
+        // date2 = pickedDate.toIso8601String();
+        tanggal = pickedDate.toIso8601String();
+        setState(() {
+          _initialValues['tanggal'] = pickedDate.toIso8601String();
+        });
+        print(_initialValues['tanggal']);
+        selectedDate = pickedDate;
+        tanggalController.text = selectedDate!.toIso8601String();
+      });
+    }
+
+    void update() {
       final isvalid = formState.currentState!.validate();
       if (!isvalid) {
         return;
       }
-      formState.currentState!.save();
 
-      whistListProvider.addWhistList(
-        namaController.text,
+      formState.currentState!.save();
+      Provider.of<WhistListProvider>(context, listen: false).update(
+        id,
+        nama!,
         double.parse(
-          totalController.text.substring(3).replaceAll(".", ""),
+          total.toString().substring(3).replaceAll(".", ""),
         ),
         tanggal!,
+        whistList.isComplete!,
+        whistList.currentDana!,
       );
-      Navigator.of(context).pop(1);
+      Navigator.of(context).pop();
     }
 
     return Scaffold(
@@ -160,7 +133,7 @@ class _AddWhistListState extends State<AddWhistList> {
                 height: 10.0,
               ),
               TextFormField(
-                controller: namaController,
+                // controller: namaController,
                 // onSaved: (value) {
                 //   editWhistList = WhistList.withId(
                 //     id: editWhistList.id,
@@ -171,7 +144,10 @@ class _AddWhistListState extends State<AddWhistList> {
                 //     isComplete: editWhistList.isComplete,
                 //   );
                 // },
-                // initialValue: _initialValues['nama'],
+                initialValue: _initialValues['nama'].toString(),
+                onSaved: (value) {
+                  nama = value;
+                },
                 validator: (e) {
                   if (e!.isEmpty) {
                     return "Nama Barang harus diisi yaa..";
@@ -200,20 +176,11 @@ class _AddWhistListState extends State<AddWhistList> {
                 height: 10.0,
               ),
               TextFormField(
-                controller: totalController,
-                // onSaved: (value) {
-                //   editWhistList = WhistList.withId(
-                //     id: editWhistList.id,
-                //     nama: editWhistList.nama,
-                //     tanggal: editWhistList.tanggal,
-                //     total: double.parse(
-                //       value!.substring(3).replaceAll(".", ""),
-                //     ),
-                //     currentDana: editWhistList.currentDana,
-                //     isComplete: editWhistList.isComplete,
-                //   );
-                // },
-                // initialValue: _initialValues['total'],
+                initialValue:
+                    "Rp.${_initialValues['total'].toString().substring(0, _initialValues['total'].toString().indexOf('.'))}",
+                onSaved: (value) {
+                  total = value;
+                },
                 keyboardType: TextInputType.number,
                 inputFormatters: <TextInputFormatter>[
                   CurrencyTextInputFormatter(
@@ -247,28 +214,30 @@ class _AddWhistListState extends State<AddWhistList> {
                   fontSize: 18.0,
                 ),
               ),
-              // if (_initialValues['tanggal'] != null)
-              //   Container(
-              //     margin: const EdgeInsets.only(
-              //       top: 5.0,
-              //     ),
-              //     child: Text(
-              //       'Target Sebelumnya : ${DateFormat.yMEd().format(DateTime.parse(
-              //         _initialValues['tanggal'].toString(),
-              //       ))}',
-              //       style: TextStyle(
-              //         fontSize: 12.0,
-              //       ),
-              //     ),
-              //   ),
-              // SizedBox(
-              //   height: 10.0,
-              // ),
+              Container(
+                margin: const EdgeInsets.only(
+                  top: 5.0,
+                ),
+                child: Text(
+                  'Target Sebelumnya : ${DateFormat.yMEd().format(DateTime.parse(
+                    _initialValues['tanggal'].toString(),
+                  ))}',
+                  style: TextStyle(
+                    fontSize: 14.0,
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 10.0,
+              ),
               TextFormField(
-                // initialValue: _initialValues['tanggal'],
+                // initialValue: _initialValues['tanggal'].toString(),
                 controller: tanggalController,
                 onTap: () {
                   _presentDatePicker();
+                },
+                onSaved: (value) {
+                  tanggal = value;
                 },
                 // onSaved: (value) {
                 //   editWhistList = WhistList.withId(
@@ -283,7 +252,7 @@ class _AddWhistListState extends State<AddWhistList> {
                 readOnly: false,
                 focusNode: _targetNode,
                 onFieldSubmitted: (_) {
-                  save();
+                  update();
                 },
                 validator: (e) {
                   if (e!.isEmpty) {
@@ -318,7 +287,7 @@ class _AddWhistListState extends State<AddWhistList> {
                         borderRadius: BorderRadius.circular(10.0),
                       )),
                   onPressed: () {
-                    save();
+                    update();
                   },
                   child: Text(
                     'SIMPAN',

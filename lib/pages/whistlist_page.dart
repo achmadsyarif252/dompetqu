@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../widgets/drawer.dart';
+
 class WhistListThing extends StatefulWidget {
   @override
   _WhistListThingState createState() => _WhistListThingState();
@@ -15,6 +17,7 @@ class WhistListThing extends StatefulWidget {
 class _WhistListThingState extends State<WhistListThing>
     with SingleTickerProviderStateMixin {
   TabController? _tabController;
+  final GlobalKey<ScaffoldState> _key = GlobalKey(); // Create a key
 
   @override
   void initState() {
@@ -36,12 +39,28 @@ class _WhistListThingState extends State<WhistListThing>
     //emptyWhistList
 
     return SafeArea(
+      key: _key,
       child: Scaffold(
+        drawerEnableOpenDragGesture: false,
+        drawer: MainDrawer(),
         floatingActionButton: _tabController!.index == 1
             ? SizedBox()
             : FloatingActionButton(
                 onPressed: () {
-                  Navigator.of(context).pushNamed(AddWhistList.routeName);
+                  Navigator.of(context)
+                      .pushNamed(AddWhistList.routeName)
+                      .then((value) {
+                    if (value == 1) {
+                      return Scaffold.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: Colors.green,
+                          content: Text(
+                            'Berhasil Tambah WhistList',
+                          ),
+                        ),
+                      );
+                    }
+                  });
                 },
                 child: Icon(
                   Icons.add,
@@ -49,10 +68,12 @@ class _WhistListThingState extends State<WhistListThing>
               ),
         appBar: AppBar(
           leading: IconButton(
-            onPressed: () {},
+            onPressed: () {
+              _key.currentState!.openDrawer();
+            },
             icon: Icon(
-              Icons.clear_all,
-              size: 30.0,
+              Icons.wysiwyg,
+              size: 28.0,
             ),
             color: Colors.black,
           ),

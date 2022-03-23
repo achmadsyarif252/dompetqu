@@ -2,17 +2,24 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:dompet_q/pages/add_progress.dart';
+import 'package:dompet_q/pages/mypoint.dart';
+import 'package:dompet_q/pages/reward_maker.dart';
 import 'package:dompet_q/provider/habit_prodivder.dart';
+import 'package:dompet_q/provider/point_provider.dart';
 import 'package:flutter/material.dart';
 import '../provider/habit_prodivder.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
+import '../widgets/drawer.dart';
+
 enum Action { Edit }
 
 class HabitMaker extends StatelessWidget {
-  final namaHabitController = TextEditingController();
+  final GlobalKey<ScaffoldState> _key = GlobalKey(); // Create a key
 
+  final namaHabitController = TextEditingController();
+  final poinHabitController = TextEditingController();
   List<Color> _availableColor = [
     Colors.red,
     Colors.green,
@@ -43,24 +50,28 @@ class HabitMaker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final HabbitProvider habbitProvider = Provider.of<HabbitProvider>(context);
+    DateTime currentDate = DateTime.now();
     saveHabit() {
-      if (namaHabitController.text.isEmpty) {
+      int poin = int.parse(poinHabitController.text);
+      if (namaHabitController.text.isEmpty ||
+          poinHabitController.text.isEmpty ||
+          poin <= 0) {
         return;
       }
       habbitProvider.addHabbit(
-        namaHabitController.text,
-        DateTime.now().toString(),
-      );
+          namaHabitController.text, DateTime.now().toString(), poin);
       namaHabitController.text = "";
+      poinHabitController.text = "";
       Navigator.of(context).pop();
     }
 
-    updateHabit(int? id, String? nama) {
+    updateHabit(int? id, String? nama, int? poin) {
       if (namaHabitController.text.isEmpty) {
         return;
       }
-      habbitProvider.updateHabbit(id!, nama!, 0);
+      habbitProvider.updateHabbit(id!, nama!, 0, poin!);
       namaHabitController.text = "";
+      poinHabitController.text = "";
       Navigator.of(context).pop();
     }
 
@@ -71,9 +82,19 @@ class HabitMaker extends StatelessWidget {
             return AlertDialog(
               scrollable: true,
               title: Text('Add Habbit'),
-              content: TextField(
-                controller: namaHabitController,
-                decoration: InputDecoration(hintText: 'Bangun Jam 04.00 Pagi'),
+              content: Column(
+                children: [
+                  TextField(
+                    controller: namaHabitController,
+                    decoration:
+                        InputDecoration(hintText: 'Bangun Jam 04.00 Pagi'),
+                  ),
+                  TextField(
+                    keyboardType: TextInputType.number,
+                    controller: poinHabitController,
+                    decoration: InputDecoration(hintText: '40'),
+                  ),
+                ],
               ),
               actions: [
                 Container(
@@ -87,7 +108,8 @@ class HabitMaker extends StatelessWidget {
                       if (id! < 0) {
                         saveHabit();
                       } else {
-                        updateHabit(id, namaHabitController.text);
+                        updateHabit(id, namaHabitController.text,
+                            int.parse(poinHabitController.text));
                       }
                     },
                     child: Text(
@@ -104,18 +126,26 @@ class HabitMaker extends StatelessWidget {
     }
 
     return Scaffold(
+      key: _key,
+      drawerEnableOpenDragGesture: false,
+      drawer: MainDrawer(),
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
-        leading: Icon(
-          Icons.clear_all,
-          color: Colors.black,
-          size: 25.0,
+        leading: IconButton(
+          onPressed: () {
+            Navigator.of(context).pushNamed(MyPoin.routeName);
+          },
+          icon: Icon(
+            Icons.card_giftcard,
+            color: Colors.black,
+            size: 28.0,
+          ),
         ),
         centerTitle: true,
         title: Text(
-          'Build Habit',
+          'Build Habbit',
           style: TextStyle(
             color: Colors.black,
           ),
@@ -125,10 +155,15 @@ class HabitMaker extends StatelessWidget {
             margin: const EdgeInsets.only(
               right: 15.0,
             ),
-            child: Icon(
-              Icons.notifications_active,
-              color: Colors.black,
-              size: 25.0,
+            child: IconButton(
+              onPressed: () {
+                Navigator.of(context).pushNamed(RewardMaker.routeName);
+              },
+              icon: Icon(
+                Icons.settings,
+                color: Colors.black,
+                size: 25.0,
+              ),
             ),
           ),
         ],
@@ -167,6 +202,9 @@ class HabitMaker extends StatelessWidget {
                         horizontal: 20.0,
                       ),
                       itemBuilder: (ctx, i) {
+                        bool isRelapse = DateFormat.yMEd().format(
+                                DateTime.parse(habbit.habbit[i].updatedAt)) !=
+                            DateFormat.yMEd().format(currentDate);
                         return GestureDetector(
                           onTap: () {
                             Navigator.of(context).pushNamed(
@@ -222,6 +260,7 @@ class HabitMaker extends StatelessWidget {
                             },
                             key: ValueKey(i),
                             child: Card(
+                              color: isRelapse ? Colors.red : Colors.white,
                               elevation: 1,
                               child: ListTile(
                                 leading: Container(
@@ -237,19 +276,30 @@ class HabitMaker extends StatelessWidget {
                                 ),
                                 title: Text(
                                   habbit.habbit[i].nama,
+                                  style: TextStyle(
+                                    color:
+                                        isRelapse ? Colors.white : Colors.black,
+                                  ),
                                 ),
                                 subtitle: Text.rich(
                                   TextSpan(
                                     children: [
                                       TextSpan(
                                           text:
-                                              '${DateFormat.yMMMEd().format(DateTime.parse(habbit.habbit[i].tanggal))} -'),
+                                              '${DateFormat.yMMMEd().format(DateTime.parse(habbit.habbit[i].tanggal))} -',
+                                          style: TextStyle(
+                                            color: isRelapse
+                                                ? Colors.white
+                                                : Colors.black,
+                                          )),
                                       TextSpan(
                                           text:
                                               ' ${habbit.habbit[i].repetisi.toString()} Repetisi',
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
-                                            color: Colors.black,
+                                            color: isRelapse
+                                                ? Colors.white
+                                                : Colors.black,
                                           )),
                                     ],
                                   ),
@@ -259,6 +309,8 @@ class HabitMaker extends StatelessWidget {
                                     if (action == Action.Edit) {
                                       namaHabitController.text =
                                           habbit.habbit[i].nama;
+                                      poinHabitController.text =
+                                          habbit.habbit[i].poinGain.toString();
                                       showDialogHabit(habbit.habbit[i].id);
                                     }
                                   },

@@ -5,11 +5,15 @@ class Habbit {
   String? nama;
   int? repetisi;
   String? tanggal;
+  String? updatedAt;
+  int? poinGain;
 
   Habbit({
     this.nama = "DEFAULT",
     this.repetisi = 0,
     this.tanggal = "00:00:00",
+    this.updatedAt = "00:00:00",
+    this.poinGain=0
   });
 
   Habbit.withId({
@@ -17,6 +21,8 @@ class Habbit {
     required this.nama,
     required this.repetisi,
     required this.tanggal,
+    required this.updatedAt,
+    required this.poinGain
   });
 
   Map<String, dynamic> toMap() {
@@ -28,16 +34,19 @@ class Habbit {
     map['nama'] = nama;
     map['repetisi'] = repetisi;
     map['tanggal'] = tanggal;
+    map['updatedAt'] = updatedAt;
+    map['poinGain']=poinGain;
 
     return map;
   }
 
   factory Habbit.fromMap(Map<String, dynamic> map) {
     return Habbit.withId(
-      id: map['id'],
-      nama: map['nama'],
-      repetisi: map['repetisi'],
-      tanggal: map['tanggal'],
-    );
+        id: map['id'],
+        nama: map['nama'],
+        repetisi: map['repetisi'],
+        tanggal: map['tanggal'],
+        updatedAt: map['updatedAt'],
+        poinGain:map['poinGain']);
   }
 }

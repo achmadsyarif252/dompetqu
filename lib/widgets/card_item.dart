@@ -1,4 +1,5 @@
 import 'package:dompet_q/pages/add_whistlist.dart';
+import 'package:dompet_q/pages/edit_whistlist.dart';
 import 'package:dompet_q/provider/whistlist_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -113,6 +114,13 @@ class CardItem extends StatelessWidget {
                               TextButton(
                                 onPressed: () {
                                   Navigator.of(context).pop();
+                                  Scaffold.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Berhasil Dihapus dari WhistList',
+                                      ),
+                                    ),
+                                  );
                                 },
                                 child: Text(
                                   'Batal',
@@ -133,7 +141,7 @@ class CardItem extends StatelessWidget {
                       );
                     } else if (action == Action.Edit) {
                       Navigator.of(context).pushNamed(
-                        AddWhistList.routeName,
+                        EditWhistList.routeName,
                         arguments: id,
                       );
                     }
